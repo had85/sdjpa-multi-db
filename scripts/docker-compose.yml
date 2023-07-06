@@ -1,0 +1,18 @@
+version: '2.1'
+services:
+  database:
+    image: mysql:latest
+    container_name: multi-db
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db-init.sql:/docker-entrypoint-initdb.d/1.sql
+    environment:
+      MYSQL_ROOT_PASSWORD: "password"
+    networks:
+      backend:
+        aliases:
+          - "multi-db"
+networks:
+  backend:
+    driver: bridge
