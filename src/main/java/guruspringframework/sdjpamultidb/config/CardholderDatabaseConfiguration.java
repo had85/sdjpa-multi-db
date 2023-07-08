@@ -1,7 +1,10 @@
 package guruspringframework.sdjpamultidb.config;
 
+import java.util.Map;
+
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -29,25 +32,30 @@ public class CardholderDatabaseConfiguration {
 	}
 
 	@Bean
-	public DataSource cardholderDatasource(DataSourceProperties cardholderDatasourceProperties) {
+	@ConfigurationProperties("spring.cardholder.datasource.hikari") //setuje hikari vrednost u datasource bean kad se
+	                                                          //instancira
+	public DataSource cardholderDatasource(@Qualifier("cardholderDatasourceProperties")DataSourceProperties cardholderDatasourceProperties) {
+		
 		return cardholderDatasourceProperties
-				.initializeDataSourceBuilder()
-				.type(HikariDataSource.class)
-				.build();
+						.initializeDataSourceBuilder()
+						.type(HikariDataSource.class)
+						.build();
 	}
 
 	@Bean
-	public LocalContainerEntityManagerFactoryBean cardholderEntityManagerFactory(DataSource cardholderDatasource,
+	public LocalContainerEntityManagerFactoryBean cardholderEntityManagerFactory(@Qualifier("cardholderDatasource")DataSource cardholderDatasource,
 			EntityManagerFactoryBuilder builder) {
 		return builder
 				.dataSource(cardholderDatasource)
 				.packages(CreditCardHolder.class)
 				.persistenceUnit("cardholder")
+				.properties(Map.of("hibernate.hbm2ddl.auto", "validate", 
+						           "hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"))
 				.build();
 	}
 	
 	@Bean
-	public PlatformTransactionManager cardholderTransactionManager(LocalContainerEntityManagerFactoryBean cardholderEntityManagerFactory) {
+	public PlatformTransactionManager cardholderTransactionManager(@Qualifier("cardholderEntityManagerFactory")LocalContainerEntityManagerFactoryBean cardholderEntityManagerFactory) {
 		 return new JpaTransactionManager(cardholderEntityManagerFactory.getObject());
 	}
 	

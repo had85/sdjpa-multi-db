@@ -1,7 +1,10 @@
 package guruspringframework.sdjpamultidb.config;
 
+import java.util.Map;
+
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
@@ -31,7 +34,9 @@ public class CardDatabaseConfiguration {
 	}
 	
 	@Bean
-	public DataSource cardDatasource(DataSourceProperties cardDatasourceProperties) {
+	@ConfigurationProperties("spring.card.datasource.hikari") //setuje hikari vrednost u datasource bean kad se
+	                                                          //instancira
+	public DataSource cardDatasource(@Qualifier("cardDatasourceProperties") DataSourceProperties cardDatasourceProperties) {
 		return cardDatasourceProperties
 				.initializeDataSourceBuilder()
 				.type(HikariDataSource.class)
@@ -39,17 +44,19 @@ public class CardDatabaseConfiguration {
 	}
 	
 	@Bean
-	public LocalContainerEntityManagerFactoryBean cardEntityManagerFactory(DataSource cardDatasource,
+	public LocalContainerEntityManagerFactoryBean cardEntityManagerFactory(@Qualifier("cardDatasource")DataSource cardDatasource,
 			EntityManagerFactoryBuilder builder) {
 		return builder
 				.dataSource(cardDatasource)
 				.packages(CreditCard.class)
 				.persistenceUnit("card")
+				.properties(Map.of("hibernate.hbm2ddl.auto", "validate",
+						           "hibernate.physical_naming_strategy", "org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy"))
 				.build();
 	}
 	
 	@Bean
-	public PlatformTransactionManager cardTransactionManager(LocalContainerEntityManagerFactoryBean cardEntityManagerFactory) {
+	public PlatformTransactionManager cardTransactionManager(@Qualifier("cardEntityManagerFactory")LocalContainerEntityManagerFactoryBean cardEntityManagerFactory) {
 		 return new JpaTransactionManager(cardEntityManagerFactory.getObject());
 	}
 

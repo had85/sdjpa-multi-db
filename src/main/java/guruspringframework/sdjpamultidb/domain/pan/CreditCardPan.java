@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder(toBuilder = true)
-public class CreditCardPAN {
+public class CreditCardPan {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
