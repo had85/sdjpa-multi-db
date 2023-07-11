@@ -24,4 +24,8 @@ public class CreditCardPan {
 
     @Convert(converter = CreditCardConverter.class)
     private String creditCardNumber;
+    
+    private Long creditCardId; //u credit card entitetu se radi inkrementiranje id-ja ostali entiteti samo
+                               //perzistiraju taj id kako bi imakli referencu
+
 }
